@@ -1,0 +1,252 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Oasis Inventario</title>
+  <link rel="stylesheet" href="styles.css" />
+</head>
+
+<body>
+  <header class="topbar">
+    <div class="brand">
+      <div class="brandLogo">OA</div>
+      <div class="brandText">
+        <div class="brandTitle">Oasis Inventario</div>
+        <div class="brandSub">Básico · Productos + Stock + Movimientos</div>
+      </div>
+    </div>
+
+    <nav class="tabs" id="tabs">
+      <button class="tab is-active" data-view="dash" type="button">Dashboard</button>
+      <button class="tab" data-view="products" type="button">Productos</button>
+      <button class="tab" data-view="moves" type="button">Movimientos</button>
+      <button class="tab" data-view="history" type="button">Historial</button>
+      <button class="tab" data-view="data" type="button">Datos</button>
+    </nav>
+
+    <div class="topActions">
+      <button class="btn ghost" id="btnNewProduct" type="button">Nuevo</button>
+      <button class="btn" id="btnSaveProduct" type="button">Guardar</button>
+    </div>
+  </header>
+
+  <main class="wrap">
+
+    <!-- KPI -->
+    <section class="kpiGrid">
+      <article class="kpiCard kpi-a">
+        <div class="kpiLabel">Productos</div>
+        <div class="kpiValue" id="kpiProducts">0</div>
+        <div class="kpiHint">En catálogo</div>
+      </article>
+      <article class="kpiCard kpi-b">
+        <div class="kpiLabel">Bajo mínimo</div>
+        <div class="kpiValue" id="kpiLow">0</div>
+        <div class="kpiHint">Acción inmediata</div>
+      </article>
+      <article class="kpiCard kpi-c">
+        <div class="kpiLabel">Valor aprox.</div>
+        <div class="kpiValue" id="kpiValue">$0.00</div>
+        <div class="kpiHint">Costo × stock</div>
+      </article>
+    </section>
+
+    <!-- VIEW: DASH -->
+    <section class="view is-active" id="view-dash">
+      <section class="card section">
+        <div class="sectionHead">
+          <div>
+            <div class="h1">Dashboard</div>
+            <div class="muted">Viendo inventario como negocio, no como libreta.</div>
+          </div>
+          <div class="pill" id="dbStatus">Listo</div>
+        </div>
+
+        <div class="gridCards2" id="dashCards"></div>
+
+        <div class="hint">Top: productos con stock bajo. En “Movimientos” haces entradas/salidas en 10 segundos.</div>
+      </section>
+    </section>
+
+    <!-- VIEW: PRODUCTS -->
+    <section class="view" id="view-products">
+      <section class="card section">
+        <div class="sectionHead">
+          <div>
+            <div class="h1">Productos</div>
+            <div class="muted">SKU manda. Si no tienes SKU, usa uno corto tipo: <b>CAP-45</b>.</div>
+          </div>
+          <div class="pill" id="prodMode">Nuevo</div>
+        </div>
+
+        <div class="grid3">
+          <div class="field">
+            <label>SKU</label>
+            <input class="input" id="sku" placeholder="Ej: CAP-45" />
+          </div>
+          <div class="field">
+            <label>Nombre</label>
+            <input class="input" id="name" placeholder="Ej: Capacitor 45uF" />
+          </div>
+          <div class="field">
+            <label>Categoría</label>
+            <input class="input" id="category" placeholder="Ej: Eléctrico / Repuestos" />
+          </div>
+        </div>
+
+        <div class="grid3">
+          <div class="field">
+            <label>Costo</label>
+            <input class="input" id="cost" type="number" step="0.01" placeholder="0.00" />
+          </div>
+          <div class="field">
+            <label>Precio</label>
+            <input class="input" id="price" type="number" step="0.01" placeholder="0.00" />
+          </div>
+          <div class="field">
+            <label>Mínimo</label>
+            <input class="input" id="min" type="number" step="1" placeholder="0" />
+          </div>
+        </div>
+
+        <div class="grid2">
+          <div class="field">
+            <label>Stock actual</label>
+            <input class="input" id="stock" type="number" step="1" placeholder="0" />
+          </div>
+          <div class="field">
+            <label>Nota</label>
+            <input class="input" id="note" placeholder="Ej: para 36k/48k / prioridad" />
+          </div>
+        </div>
+
+        <div class="rowBtns" style="margin-top:12px">
+          <button class="btn ghost" id="btnDuplicate" type="button">Duplicar</button>
+          <button class="btn danger" id="btnDeleteProduct" type="button">Borrar</button>
+        </div>
+      </section>
+
+      <section class="card section">
+        <div class="sectionHead">
+          <div>
+            <div class="h1">Lista</div>
+            <div class="muted">Busca por SKU, nombre o categoría.</div>
+          </div>
+          <input class="input small" id="prodSearch" placeholder="Buscar..." />
+        </div>
+
+        <div class="tableWrap">
+          <table class="histTable">
+            <thead>
+              <tr>
+                <th>SKU</th><th>Nombre</th><th>Categoría</th><th>Stock</th><th>Mín</th><th>Precio</th><th>Acciones</th>
+              </tr>
+            </thead>
+            <tbody id="prodBody"></tbody>
+          </table>
+        </div>
+      </section>
+    </section>
+
+    <!-- VIEW: MOVES -->
+    <section class="view" id="view-moves">
+      <section class="card section">
+        <div class="sectionHead">
+          <div>
+            <div class="h1">Movimientos</div>
+            <div class="muted">Entrada / Salida / Ajuste: cambia stock y guarda historial.</div>
+          </div>
+          <div class="pill" id="movePill">Operación</div>
+        </div>
+
+        <div class="grid3">
+          <div class="field">
+            <label>Producto (SKU)</label>
+            <input class="input" id="mSku" placeholder="Escribe SKU exacto" />
+            <div class="hint">Tip: copia SKU desde “Productos”.</div>
+          </div>
+          <div class="field">
+            <label>Tipo</label>
+            <select class="input" id="mType">
+              <option value="IN">Entrada</option>
+              <option value="OUT">Salida</option>
+              <option value="ADJ">Ajuste</option>
+            </select>
+          </div>
+          <div class="field">
+            <label>Cantidad</label>
+            <input class="input" id="mQty" type="number" step="1" placeholder="1" />
+          </div>
+        </div>
+
+        <div class="grid2">
+          <div class="field">
+            <label>Referencia</label>
+            <input class="input" id="mRef" placeholder="Ej: Compra / Trabajo # / Cliente" />
+          </div>
+          <div class="field">
+            <label>Nota</label>
+            <input class="input" id="mNote" placeholder="Detalles opcionales" />
+          </div>
+        </div>
+
+        <div class="rowBtns" style="margin-top:12px">
+          <button class="btn" id="btnApplyMove" type="button">Aplicar</button>
+          <button class="btn ghost" id="btnGoProducts" type="button">Ver productos</button>
+        </div>
+      </section>
+    </section>
+
+    <!-- VIEW: HISTORY -->
+    <section class="view" id="view-history">
+      <section class="card section">
+        <div class="sectionHead">
+          <div>
+            <div class="h1">Historial</div>
+            <div class="muted">Movimientos registrados con fecha y referencia.</div>
+          </div>
+          <input class="input small" id="histSearch" placeholder="Buscar..." />
+        </div>
+
+        <div class="tableWrap">
+          <table class="histTable">
+            <thead>
+              <tr>
+                <th>Fecha</th><th>SKU</th><th>Tipo</th><th>Cant.</th><th>Stock final</th><th>Referencia</th><th>Nota</th>
+              </tr>
+            </thead>
+            <tbody id="histBody"></tbody>
+          </table>
+        </div>
+      </section>
+    </section>
+
+    <!-- VIEW: DATA -->
+    <section class="view" id="view-data">
+      <section class="card section">
+        <div class="sectionHead">
+          <div>
+            <div class="h1">Datos</div>
+            <div class="muted">Exporta / Importa tu inventario. Sin backend, sin dolor.</div>
+          </div>
+          <div class="rowBtns">
+            <button class="btn ghost" id="btnExport" type="button">Export</button>
+            <button class="btn ghost" id="btnImport" type="button">Import</button>
+            <input id="importFile" type="file" accept="application/json" hidden />
+            <button class="btn danger" id="btnReset" type="button">Reset</button>
+          </div>
+        </div>
+
+        <div class="hint">Export guarda productos + movimientos. Import reemplaza data actual.</div>
+      </section>
+    </section>
+
+  </main>
+
+  <!-- HUB -->
+  <a class="hubFab" id="hubBtn" href="#" title="Volver a Oasis Hub" aria-label="Volver a Oasis Hub">⟵ Hub</a>
+
+  <script src="app.js"></script>
+</body>
+</html>
